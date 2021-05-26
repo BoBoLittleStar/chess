@@ -23,13 +23,9 @@ const decorations: { x: number; y: number }[] = [
   { x: 8, y: 6 },
 ];
 
-export const Board = () => {
+export const App = () => {
   const Div = styled.div`
-    margin: auto;
     width: 800px;
-    @media (max-width: 1024px) {
-      width: 100%;
-    }
     background: cornsilk;
     border: 2px solid black;
 
@@ -73,14 +69,12 @@ export const Board = () => {
         {Array.from(Array(7).keys()).map((n) => (
           <Fragment key={`v${n}`}>
             <line
-              key={`va${n}`}
               x1={unit * (n - 3)}
               y1={unit * -4.5}
               x2={unit * (n - 3)}
               y2={unit * -0.5}
             />
             <line
-              key={`vb${n}`}
               x1={unit * (n - 3)}
               y1={unit * 0.5}
               x2={unit * (n - 3)}
@@ -95,32 +89,28 @@ export const Board = () => {
         {textChuHe}
         {textHanJie}
         {decorations.map(({ x, y }) => (
-          <>
+          <Fragment key={`${x}-${y}`}>
             {x > 0 && (
               <>
                 <line
-                  key={`${x}-${y}`}
                   x1={unit * (x - 4) - segment - gap}
                   y1={unit * (y - 4.5) - gap}
                   x2={unit * (x - 4) - gap}
                   y2={unit * (y - 4.5) - gap}
                 />
                 <line
-                  key={`${x}-${y}`}
                   x1={unit * (x - 4) - segment - gap}
                   y1={unit * (y - 4.5) + gap}
                   x2={unit * (x - 4) - gap}
                   y2={unit * (y - 4.5) + gap}
                 />
                 <line
-                  key={`${x}-${y}`}
                   x1={unit * (x - 4) - gap}
                   y1={unit * (y - 4.5) - segment - gap}
                   x2={unit * (x - 4) - gap}
                   y2={unit * (y - 4.5) - gap}
                 />
                 <line
-                  key={`${x}-${y}`}
                   x1={unit * (x - 4) - gap}
                   y1={unit * (y - 4.5) + segment + gap}
                   x2={unit * (x - 4) - gap}
@@ -131,28 +121,24 @@ export const Board = () => {
             {x < 8 && (
               <>
                 <line
-                  key={`${x}-${y}`}
                   x1={unit * (x - 4) + segment + gap}
                   y1={unit * (y - 4.5) - gap}
                   x2={unit * (x - 4) + gap}
                   y2={unit * (y - 4.5) - gap}
                 />
                 <line
-                  key={`${x}-${y}`}
                   x1={unit * (x - 4) + segment + gap}
                   y1={unit * (y - 4.5) + gap}
                   x2={unit * (x - 4) + gap}
                   y2={unit * (y - 4.5) + gap}
                 />
                 <line
-                  key={`${x}-${y}`}
                   x1={unit * (x - 4) + gap}
                   y1={unit * (y - 4.5) - segment - gap}
                   x2={unit * (x - 4) + gap}
                   y2={unit * (y - 4.5) - gap}
                 />
                 <line
-                  key={`${x}-${y}`}
                   x1={unit * (x - 4) + gap}
                   y1={unit * (y - 4.5) + segment + gap}
                   x2={unit * (x - 4) + gap}
@@ -160,7 +146,7 @@ export const Board = () => {
                 />
               </>
             )}
-          </>
+          </Fragment>
         ))}
       </svg>
     </Div>
