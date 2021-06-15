@@ -1,7 +1,7 @@
 import { createAction, createReducer } from "@reduxjs/toolkit";
 
-export const match = createAction("match", () => {
-  return { payload: "hello" };
+export const match = createAction("match", (id: string) => {
+  return { payload: id };
 });
 
 export const selectMatch = (state: { match: string }) => state.match;

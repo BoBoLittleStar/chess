@@ -2,8 +2,8 @@ import styled from "@emotion/styled";
 import React from "react";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
-import { App } from "./App";
-import { Panel } from "./Panel";
+import { BoardPanel } from "./BoardPanel";
+import { ButtonPanel } from "./ButtonPanel";
 import { store } from "./reducers";
 
 const Div = styled.div`
@@ -15,8 +15,8 @@ const Div = styled.div`
 ReactDOM.render(
   <Provider store={store}>
     <Div>
-      <App />
-      <Panel />
+      <BoardPanel />
+      <ButtonPanel />
     </Div>
   </Provider>,
   document.getElementById("root")
