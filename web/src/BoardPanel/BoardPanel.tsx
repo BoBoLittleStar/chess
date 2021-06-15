@@ -23,7 +23,7 @@ const decorations: { x: number; y: number }[] = [
   { x: 8, y: 6 },
 ];
 
-export const App = () => {
+export const BoardPanel = () => {
   const Div = styled.div`
     width: 800px;
     background: cornsilk;
