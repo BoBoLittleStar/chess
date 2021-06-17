@@ -1,8 +1,3 @@
-export const color = "gray";
-export const unit = 120;
-export const segment = unit / 5;
-export const gap = unit / 15;
-
 export const decorations: { x: number; y: number }[] = [
   { x: 1, y: 2 },
   { x: 7, y: 2 },

@@ -18,13 +18,13 @@ export const ButtonPanel = () => {
     },
     [setStoredName]
   );
-  const { onlineCount, matchedOpponent, opponentStatus } = useSelector(
-    (state: TypeState) => ({
+  const { onlineCount, matchedOpponent, opponentStatus, gameStarted } =
+    useSelector((state: TypeState) => ({
       onlineCount: state.onlineCount,
       matchedOpponent: state.matchedOpponent,
       opponentStatus: state.opponentStatus,
-    })
-  );
+      gameStarted: !!state.currentGame,
+    }));
 
   const [refreshing, setRefreshing] = useState(false);
   const handleStart = useCallback((flag: boolean) => {
@@ -43,10 +43,10 @@ export const ButtonPanel = () => {
   );
 
   const [count, setCount] = useState(1);
-
   useEffect(() => {
     refreshing && sleep(750).then(() => setCount((count % 6) + 1));
   }, [count, matchedOpponent, refreshing]);
+
   useEffect(() => {
     matchedOpponent && setRefreshing(false);
   }, [matchedOpponent]);
@@ -61,24 +61,28 @@ export const ButtonPanel = () => {
           matchedOpponent && <p>你的对手：{matchedOpponent}</p>
         )}
         {matchedOpponent || opponentStatus ? (
-          <div>
+          !gameStarted && (
             <div>
-              <button onClick={() => handleReady(true)} disabled={ready}>
-                准备
-              </button>
-              <button
-                onClick={() => handleReady(false)}
-                disabled={ready && !!matchedOpponent}
-              >
-                返回
-              </button>
+              {
+                <div>
+                  <button onClick={() => handleReady(true)} disabled={ready}>
+                    准备
+                  </button>
+                  <button
+                    onClick={() => handleReady(false)}
+                    disabled={ready && !!matchedOpponent}
+                  >
+                    返回
+                  </button>
+                </div>
+              }
+              {opponentStatus && (
+                <div>
+                  {opponentStatus === "ready" ? "对手已准备" : "对手已离开"}
+                </div>
+              )}
             </div>
-            {opponentStatus && (
-              <div>
-                {opponentStatus === "ready" ? "对手已准备" : "对手已离开"}
-              </div>
-            )}
-          </div>
+          )
         ) : (
           <>
             {!refreshing && (

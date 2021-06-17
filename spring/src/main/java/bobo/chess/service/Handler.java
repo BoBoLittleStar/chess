@@ -62,11 +62,11 @@ public class Handler extends TextWebSocketHandler {
 	}
 
 	private void handleSessionOpen(String sessionId, String userId, WebSocketSession session, JsonNode payload) {
-		new Thread(() -> users.values().forEach(this::countOnlines)).start();
 		sessions.put(sessionId, userId);
 		users.put(userId, session);
 		names.put(userId, payload.get("name").asText());
 		handleRestore(userId);
+		users.values().forEach(this::countOnlines);
 	}
 
 	private void handleSessionClose(WebSocketSession session) {
@@ -74,13 +74,21 @@ public class Handler extends TextWebSocketHandler {
 		users.remove(userId);
 		names.remove(userId);
 		awaitingSet.remove(userId);
+		spectators.remove(userId);
 		users.values().forEach(this::countOnlines);
 	}
 
 	private void handleRestore(String userId) {
 		Game game = games.get(userId);
-		if (game != null && game.isStarted())
-			handleSendGame(userId, game);
+		if (game != null)
+			try {
+				users.get(userId).sendMessage(message(
+						new ObjectConstructor().put("matchedOpponent", names.get(oppos.get(userId))).toString()));
+				if (game.isStarted())
+					handleSendGame(userId, game);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 	}
 
 	private void countOnlines(WebSocketSession session) {
@@ -160,10 +168,10 @@ public class Handler extends TextWebSocketHandler {
 	}
 
 	private void handlePlayerMove(String userId, int from, int to) {
-		int xfrom = from >>> 8;
-		int yfrom = from & 0xff;
-		int xto = to >>> 8;
-		int yto = to & 0xff;
+		int xfrom = from >>> 4;
+		int yfrom = from & 0xf;
+		int xto = to >>> 4;
+		int yto = to & 0xf;
 		Game game = games.get(userId);
 		if (game.move(xfrom, yfrom, xto, yto) != -1) {
 			handleSendGame(userId, game);

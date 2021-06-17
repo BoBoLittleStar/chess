@@ -57,6 +57,10 @@ public class Game {
 		return reds != null && blacks != null;
 	}
 
+	public String getPlayer() {
+		return (moves.size() & 1) == 0 ? redId : blackId;
+	}
+
 	private Chess getChess(int x, int y, boolean rotate) {
 		if (rotate) {
 			x = 8 - x;
