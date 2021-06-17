@@ -1,52 +1,181 @@
 package bobo.chess.game;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
-import org.springframework.web.bind.annotation.ResponseBody;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import bobo.chess.game.Chess.Black;
-import bobo.chess.game.Chess.Red;
 import lombok.Data;
 
 @Data
-@ResponseBody
 public class Game {
-	private Map<Byte, Black> blacks;
-	private Map<Byte, Red> reds;
+	private String redId;
+	private String blackId;
+	private Map<Integer, Chess> reds;
+	private Map<Integer, Chess> blacks;
+	private final List<Integer> moves;
 
 	public Game() {
-		reds = new HashMap<>();
-		blacks = new HashMap<>();
-		reds.put(null, null);
+		moves = new LinkedList<>();
 	}
 
-	public void move(boolean red, int xfrom, int yfrom, int xto, int yto) {
-		Chess c = red ? reds.get(hashPos(xfrom, yfrom)) : blacks.get(hashPos(xfrom, yfrom));
-
+	public void setReady(String userId) {
+		Map<Integer, Chess> map;
+		if (userId.equals(redId))
+			map = reds = new HashMap<>();
+		else if (userId.equals(blackId))
+			map = blacks = new HashMap<>();
+		else
+			throw new RuntimeException(userId);
+		map.put(hashPos(0, 0), Chess.ROOK);
+		map.put(hashPos(1, 0), Chess.KNIGHT);
+		map.put(hashPos(2, 0), Chess.BISHOP);
+		map.put(hashPos(3, 0), Chess.GUARD);
+		map.put(hashPos(4, 0), Chess.KING);
+		map.put(hashPos(5, 0), Chess.GUARD);
+		map.put(hashPos(6, 0), Chess.BISHOP);
+		map.put(hashPos(7, 0), Chess.KNIGHT);
+		map.put(hashPos(8, 0), Chess.ROOK);
+		map.put(hashPos(1, 2), Chess.CANNON);
+		map.put(hashPos(7, 2), Chess.CANNON);
+		map.put(hashPos(0, 3), Chess.SOLDIER);
+		map.put(hashPos(2, 3), Chess.SOLDIER);
+		map.put(hashPos(4, 3), Chess.SOLDIER);
+		map.put(hashPos(6, 3), Chess.SOLDIER);
+		map.put(hashPos(8, 3), Chess.SOLDIER);
 	}
 
-	public Red getRed(int x, int y) {
-		return reds.get(hashPos(x, y));
+	@JsonIgnore
+	public boolean isEmpty() {
+		return reds == null && blacks == null;
 	}
 
-	public Black getBlack(int x, int y) {
-		return blacks.get(hashPos(x, y));
+	@JsonIgnore
+	public boolean isStarted() {
+		return reds != null && blacks != null;
 	}
 
-	private byte hashPos(int x, int y) {
-		return (byte) (x << 4 | y);
+	public String getPlayer() {
+		return (moves.size() & 1) == 0 ? redId : blackId;
 	}
 
-	private int[] dehashPos(byte b) {
-		return new int[] { b >>> 4, b & 0xf };
+	private Chess getChess(int x, int y, boolean rotate) {
+		if (rotate) {
+			x = 8 - x;
+			y = 9 - y;
+		}
+		Chess c = reds.get(hashPos(x, y));
+		if (c == null)
+			c = blacks.get(hashPos(8 - x, 9 - y));
+		return c;
 	}
 
-	private short hashMove(int from, int to) {
-		return (short) (from << 8 | to);
+	public int move(int xfrom, int yfrom, int xto, int yto) {
+		if (xto < 0 || xto > 8 || yto < 0 || yto > 9)
+			return -1;
+		boolean isRedMove = (moves.size() & 1) == 0;
+		Chess redAtDest = reds.get(isRedMove ? hashPos(xto, yto) : hashPos(8 - xto, 9 - yto));
+		Chess blackAtDest = blacks.get(isRedMove ? hashPos(8 - xto, 9 - yto) : hashPos(xto, yto));
+		if (isRedMove ? redAtDest != null : blackAtDest != null)
+			return -1;
+		Chess chessMoving = isRedMove ? reds.get(hashPos(xfrom, yfrom)) : blacks.get(hashPos(xfrom, yfrom));
+		if (chessMoving == null)
+			return -1;
+		switch (chessMoving) {
+		case BISHOP -> {
+			if (Math.abs(xto - xfrom) != 2 || Math.abs(yto - yfrom) != 2)
+				return -1;
+			if (yto > 4)
+				return -1;
+			int xmid = (xto + xfrom) / 2;
+			int ymid = (yto + yfrom) / 2;
+			if (getChess(xmid, ymid, isRedMove) != null)
+				return -1;
+		}
+		case CANNON -> {
+			boolean taking = redAtDest != null || blackAtDest != null;
+			if (xto != xfrom && yto != yfrom)
+				return -1;
+			if (xto == xfrom) {
+				boolean forward = yto > yfrom;
+				for (int y = forward ? yto - 1 : yto + 1; y != yfrom; y = forward ? y - 1 : y + 1)
+					if (getChess(xto, y, isRedMove) != null)
+						if (taking)
+							taking = false;
+						else
+							return -1;
+			} else {
+				boolean right = xto > xfrom;
+				for (int x = right ? xto - 1 : xto + 1; x != xfrom; x = right ? x - 1 : x + 1)
+					if (getChess(x, yto, isRedMove) != null)
+						if (taking)
+							taking = false;
+						else
+							return -1;
+			}
+		}
+		case GUARD -> {
+			if (Math.abs(xto - xfrom) != 1 || Math.abs(yto - yfrom) != 1)
+				return -1;
+			if (xto < 3 || xto > 5 || yto > 2)
+				return -1;
+		}
+		case KING -> {
+			if (xto < 3 || xto > 5 || yto > 2)
+				return -1;
+			if (xto != xfrom && yto != yfrom)
+				return -1;
+			if (Math.abs(xto - xfrom) != 1 && Math.abs(yto - yfrom) != 1)
+				return -1;
+		}
+		case KNIGHT -> {
+			if (xto == xfrom || yto == yfrom)
+				return -1;
+			if (Math.abs(xto - xfrom) + Math.abs(yto - yfrom) != 3)
+				return -1;
+			if (Math.abs(xto - xfrom) == 2 && getChess((xto + xfrom) / 2, yfrom, isRedMove) != null)
+				return -1;
+			if (Math.abs(yto - yfrom) == 2 && getChess(xfrom, (yto + yfrom) / 2, isRedMove) != null)
+				return -1;
+		}
+		case ROOK -> {
+			if (xto != xfrom && yto != yfrom)
+				return -1;
+			if (xto == xfrom) {
+				boolean forward = yto > yfrom;
+				for (int y = forward ? yto - 1 : yto + 1; y != yfrom; y = forward ? y - 1 : y + 1)
+					if (getChess(xto, y, isRedMove) != null)
+						return -1;
+			} else {
+				boolean right = xto > xfrom;
+				for (int x = right ? xto - 1 : xto + 1; x != xfrom; x = right ? x - 1 : x + 1)
+					if (getChess(x, yto, isRedMove) != null)
+						return -1;
+			}
+		}
+		case SOLDIER -> {
+			if (yto != yfrom && yto != yfrom + 1)
+				return -1;
+			if (xto != xfrom && (yto < 5 || yto != yfrom))
+				return -1;
+		}
+		}
+		var v = isRedMove ? reds : blacks;
+		v.put(hashPos(xto, yto), v.remove(hashPos(xfrom, yfrom)));
+		int move = hashMove(hashPos(xfrom, yfrom), hashPos(xto, yto), isRedMove ? blackAtDest : redAtDest);
+		moves.add(move);
+		(isRedMove ? blacks : reds).remove(hashPos(8 - xto, 9 - yto));
+		return move;
 	}
 
-	private int[] dehashMove(short move) {
-		return new int[] { move >>> 8, move & 0xff };
+	private int hashPos(int x, int y) {
+		return x << 4 | y;
+	}
+
+	private int hashMove(int from, int to, Chess c) {
+		int i = from << 8 | to;
+		return c != null ? i | c.ordinal() + 1 << 16 : i;
 	}
 }
