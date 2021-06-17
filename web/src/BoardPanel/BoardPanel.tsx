@@ -1,57 +1,29 @@
-import styled from "@emotion/styled";
-import React, { Fragment } from "react";
-
-const unit = 120;
-const segment = unit / 5;
-const gap = unit / 15;
-const color = "gray";
-
-const decorations: { x: number; y: number }[] = [
-  { x: 1, y: 2 },
-  { x: 7, y: 2 },
-  { x: 0, y: 3 },
-  { x: 2, y: 3 },
-  { x: 4, y: 3 },
-  { x: 6, y: 3 },
-  { x: 8, y: 3 },
-  { x: 1, y: 7 },
-  { x: 7, y: 7 },
-  { x: 0, y: 6 },
-  { x: 2, y: 6 },
-  { x: 4, y: 6 },
-  { x: 6, y: 6 },
-  { x: 8, y: 6 },
-];
+import React, { Fragment, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { id } from "../config";
+import { TypeState } from "../reducers";
+import { decorations, gap, segment, unit } from "./constants";
+import { Div } from "./styles";
 
 export const BoardPanel = () => {
-  const Div = styled.div`
-    width: 800px;
-    background: cornsilk;
-    border: 2px solid black;
-
-    svg {
-      line {
-        stroke: ${color};
-        stroke-width: 1;
-      }
-
-      text.board-background {
-        fill: ${color};
-        font-family: serif;
-        font-size: ${unit / 2}px;
-
-        &.chu {
-          transform: translate(-6em, 0.3em);
-        }
-
-        &.han {
-          transform: translate(3em, 0.3em);
-        }
-      }
-    }
-  `;
   const textChuHe = <text className="board-background chu">楚&emsp;河</text>;
   const textHanJie = <text className="board-background han">汉&emsp;界</text>;
+  const [player, setPlayer] = useState<"red" | "black">();
+  const { redId, blackId, red, black } = useSelector((state: TypeState) => ({
+    redId: state.currentGame?.redId,
+    blackId: state.currentGame?.blackId,
+    red: state.currentGame?.red,
+    black: state.currentGame?.black,
+  }));
+  useEffect(() => {
+    id === redId && setPlayer("red");
+    id === blackId && setPlayer("black");
+  }, [redId, blackId]);
+  useEffect(() => {
+    red && console.log(red);
+    black && console.log(black);
+  }, [red, black]);
+
   return (
     <Div>
       <svg viewBox={`-${unit * 5} -${unit * 5.5} ${unit * 10} ${unit * 11}`}>
@@ -148,6 +120,7 @@ export const BoardPanel = () => {
             )}
           </Fragment>
         ))}
+        <rect x={3} y={3} width={30} height={30} />
       </svg>
     </Div>
   );
