@@ -1,6 +1,9 @@
 .idea
 node_modules
 build
-/.metadata/
-/db/
+.metadata
+db
 .DS_Store
+.gradle
+.project
+.settings

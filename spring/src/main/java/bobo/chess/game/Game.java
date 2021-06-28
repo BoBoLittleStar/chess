@@ -91,7 +91,7 @@ public class Game {
 				return -1;
 			int xmid = (xto + xfrom) / 2;
 			int ymid = (yto + yfrom) / 2;
-			if (getChess(xmid, ymid, isRedMove) != null)
+			if (getChess(xmid, ymid, !isRedMove) != null)
 				return -1;
 		}
 		case CANNON -> {
@@ -101,7 +101,7 @@ public class Game {
 			if (xto == xfrom) {
 				boolean forward = yto > yfrom;
 				for (int y = forward ? yto - 1 : yto + 1; y != yfrom; y = forward ? y - 1 : y + 1)
-					if (getChess(xto, y, isRedMove) != null)
+					if (getChess(xto, y, !isRedMove) != null)
 						if (taking)
 							taking = false;
 						else
@@ -109,12 +109,14 @@ public class Game {
 			} else {
 				boolean right = xto > xfrom;
 				for (int x = right ? xto - 1 : xto + 1; x != xfrom; x = right ? x - 1 : x + 1)
-					if (getChess(x, yto, isRedMove) != null)
+					if (getChess(x, yto, !isRedMove) != null)
 						if (taking)
 							taking = false;
 						else
 							return -1;
 			}
+			if (taking)
+				return -1;
 		}
 		case GUARD -> {
 			if (Math.abs(xto - xfrom) != 1 || Math.abs(yto - yfrom) != 1)
@@ -135,9 +137,9 @@ public class Game {
 				return -1;
 			if (Math.abs(xto - xfrom) + Math.abs(yto - yfrom) != 3)
 				return -1;
-			if (Math.abs(xto - xfrom) == 2 && getChess((xto + xfrom) / 2, yfrom, isRedMove) != null)
+			if (Math.abs(xto - xfrom) == 2 && getChess((xto + xfrom) / 2, yfrom, !isRedMove) != null)
 				return -1;
-			if (Math.abs(yto - yfrom) == 2 && getChess(xfrom, (yto + yfrom) / 2, isRedMove) != null)
+			if (Math.abs(yto - yfrom) == 2 && getChess(xfrom, (yto + yfrom) / 2, !isRedMove) != null)
 				return -1;
 		}
 		case ROOK -> {
@@ -146,12 +148,12 @@ public class Game {
 			if (xto == xfrom) {
 				boolean forward = yto > yfrom;
 				for (int y = forward ? yto - 1 : yto + 1; y != yfrom; y = forward ? y - 1 : y + 1)
-					if (getChess(xto, y, isRedMove) != null)
+					if (getChess(xto, y, !isRedMove) != null)
 						return -1;
 			} else {
 				boolean right = xto > xfrom;
 				for (int x = right ? xto - 1 : xto + 1; x != xfrom; x = right ? x - 1 : x + 1)
-					if (getChess(x, yto, isRedMove) != null)
+					if (getChess(x, yto, !isRedMove) != null)
 						return -1;
 			}
 		}
